@@ -1,5 +1,10 @@
 package com.ssg.partner.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +16,7 @@ import java.util.List;
 
 /**
  * 제휴사 주문 조회 응답 DTO
- * 모든 제휴사가 공통으로 반환하는 응답 포맷
+ * 모든 제휴사가 공통으로 반환하는 SSG 기준 응답 포맷
  */
 @Data
 @Builder
@@ -22,7 +27,7 @@ public class OrderResponse {
     /**
      * 주문 목록
      */
-    private List<Order> orders;
+    private List<PartnerOrder> orders;
     
     /**
      * 전체 주문 수
@@ -40,53 +45,57 @@ public class OrderResponse {
     private Integer totalPages;
     
     /**
-     * 개별 주문 정보
+     * 제휴사 주문 정보 (기존 ExtnlOrder 대체)
+     * SSG 기준으로 표준화된 주문 데이터
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Order {
+    public static class PartnerOrder {
         
         /**
-         * 제휴사 주문번호
+         * 제휴사 주문번호 (venOrdNo)
          */
         private String partnerOrderId;
         
         /**
-         * 우리 회사 주문번호 (제휴사에서 제공하는 경우)
+         * 주문일시 (ordDt)
          */
-        private String ssgOrderId;
-        
-        /**
-         * 주문일시
-         */
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
+        @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime orderDate;
         
         /**
-         * 주문 상태
+         * 제휴사 ID (almktId)
          */
-        private String orderStatus;
+        private String partnerId;
         
         /**
          * 주문자 정보
          */
-        private Customer customer;
+        private OrderCustomer customer;
         
         /**
          * 주문 상품 목록
          */
-        private List<OrderItem> orderItems;
-        
-        /**
-         * 주문 금액 정보
-         */
-        private OrderAmount orderAmount;
+        private List<PartnerOrderItem> orderItems;
         
         /**
          * 배송 정보
          */
-        private Delivery delivery;
+        private DeliveryInfo delivery;
+        
+        /**
+         * 장보기 특화 정보 (필요한 경우만)
+         */
+        private MartOrderInfo martOrderInfo;
+        
+        /**
+         * 기타 메타데이터
+         */
+        private OrderMetadata metadata;
     }
     
     /**
@@ -96,53 +105,179 @@ public class OrderResponse {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Customer {
-        private String name;
-        private String phone;
-        private String email;
+    public static class OrderCustomer {
+        private String name;           // ordpeNm
+        private String phone;          // ordpeHpno
+        private String landline;       // ordpeTelno
+        private String email;          // ordpeEmail
+        private String zipCode;        // ordpeZipcd
+        private String baseAddress;    // ordpeLotnoBascAddr
+        private String detailAddress;  // ordpeLotnoDtlAddr
+        private String roadBaseAddress; // ordpeRoadNmBascAddr
+        private String roadDetailAddress; // ordpeRoadNmDtlAddr
     }
     
     /**
-     * 주문 상품 정보
+     * 제휴사 주문 상품 정보 (기존 ExtnlOrderItem 대체)
+     * SSG 기준으로 표준화된 주문 상품 데이터
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class OrderItem {
-        private String productId;
-        private String productName;
-        private Integer quantity;
-        private BigDecimal unitPrice;
-        private BigDecimal totalPrice;
+    public static class PartnerOrderItem {
+        
+        /**
+         * 제휴사 주문상품순번 (almktOrdItemNo)
+         */
+        private String partnerOrderItemNo;
+        
+        /**
+         * 상품 정보
+         */
+        private ProductInfo product;
+        
+        /**
+         * 주문 수량 (ordQty)
+         */
+        private Long quantity;
+        
+        /**
+         * 가격 정보
+         */
+        private PriceInfo price;
+        
+        /**
+         * 배송 정보
+         */
+        private ItemDeliveryInfo delivery;
+        
+        /**
+         * 기타 메타데이터
+         */
+        private ItemMetadata metadata;
     }
     
     /**
-     * 주문 금액 정보
+     * 상품 정보
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class OrderAmount {
-        private BigDecimal productAmount;    // 상품금액
-        private BigDecimal discountAmount;   // 할인금액
-        private BigDecimal deliveryFee;      // 배송비
-        private BigDecimal totalAmount;      // 총 주문금액
+    public static class ProductInfo {
+        private String partnerItemId;      // venItemId
+        private String partnerUnitId;      // venUitemId
+        private String ssgItemId;          // ssgItemId
+        private String ssgUnitId;          // ssgUitemId
+        private String itemName;           // itemName
+        private String unitName;           // uitemName
+        private String storeNo;            // strNo
+        private String partnerGiftId;      // ptnrGiftId
     }
     
     /**
-     * 배송 정보
+     * 가격 정보
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Delivery {
-        private String recipientName;
-        private String recipientPhone;
-        private String address;
-        private String deliveryStatus;
-        private String trackingNumber;
+    public static class PriceInfo {
+        private BigDecimal deliveryCost;       // dlvCst
+        private BigDecimal partnerSupplyPrice; // venSplprc
+        private BigDecimal partnerSellPrice;   // venSellPrc
+        private BigDecimal optionPrice;        // optionPrc
+        private BigDecimal ssgDiscountAmount;  // venDcAmt
+        private BigDecimal partnerDiscountAmount; // venBdnDcAmt
+        private BigDecimal realOrderAmount;    // venRlordAmt
+        private BigDecimal ssgMarketingDiscount; // ssgBdnDcOfferAmt
+        private BigDecimal ssgDiscount;        // ssgbdnDcAmt
+    }
+    
+    /**
+     * 상품별 배송 정보
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ItemDeliveryInfo {
+        private String recipientName;      // rcvrNm
+        private String recipientPhone;     // rcvrPhoneNum
+        private String recipientLandline;  // rcvrTelNum
+        private String zipCode;            // rcvrZipcd
+        private String baseAddress;        // rcvrBaseAddr
+        private String detailAddress;      // rcvrDtlsAddr
+        private Boolean isRoadNameAddress; // isRoadNmAddr
+        private String prepaymentCode;     // prpayCodDivCd
+        private String deliveryMemo;       // deliveryMemo
+        private Integer deliveryLocationNo; // shpplocNo
+        private Boolean isBundleDelivery;  // isBndlDlv
+        private String deliveryNo;         // dlvNo
+        private String deliveryReserveType; // shppRsvtTypeCd
+    }
+    
+    /**
+     * 주문 배송 정보
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeliveryInfo {
+        private String deliveryType;       // strDlvClfCd
+        private String deliveryReserveDate; // shppRsvtDt
+        private String deliveryStartTime;  // shppStrtHm
+        private String deliveryEndTime;    // shppEndHm
+        private List<String> memoContents; // memoCntts
+        private Boolean isShippingCostByRealPrice; // isShippingCostChargeByRealPrice
+    }
+    
+    /**
+     * 장보기 주문 특화 정보
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MartOrderInfo {
+        private BigDecimal depositPrice;   // depositPrc
+        private String orderDegree;        // ordDgr
+        private String memberId;           // memberId
+        private String tomorrowApplyYn;    // stmrwAplYn
+        private String storeNo;            // strNo
+    }
+    
+    /**
+     * 주문 메타데이터
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OrderMetadata {
+        private Boolean isExternal;        // isExtnl
+        private Boolean isManual;          // isMnual
+        private Boolean isBundleDeliveryCostOverlapped; // isBndlDlvCstOverlapped
+        private Boolean needCapacityCheck; // needCapaChk
+        private Boolean isGiftOrder;       // isGiftOrder
+        private Boolean isAlertOff;        // isAlertOff
+        private String mallType;           // mallType
+        private List<String> skuNos;       // skuNos
+        private String orderMemoDivCode;   // ordMemoDivCd
+        private String partnerInflowTypeCode; // allnInfloTypeCd
+    }
+    
+    /**
+     * 상품 메타데이터
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ItemMetadata {
+        private String buildingManageNo;   // bldgMngNo
+        private Long nPlusStandardQty;     // nPlusStandQty
     }
 }

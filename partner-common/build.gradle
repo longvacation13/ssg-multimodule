@@ -1,7 +1,12 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:3.2.0'
+    }
 }
 
 group = 'com.ssg.partner'
@@ -22,12 +27,13 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot
-    implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // Spring Boot (라이브러리용)
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-web'
     
     // JSON 처리
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     
     // Lombok
     compileOnly 'org.projectlombok:lombok'

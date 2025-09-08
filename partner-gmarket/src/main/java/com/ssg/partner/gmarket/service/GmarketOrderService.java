@@ -18,7 +18,7 @@ public class GmarketOrderService implements PartnerOrderService {
     
     // TODO: 외주 개발자가 구현
     // - 지마켓 API 클라이언트
-    // - 지마켓 응답 데이터를 우리 회사 기준 DTO로 변환하는 로직
+    // - 지마켓 응답 데이터를 SSG 기준 DTO로 변환하는 로직
     
     @Override
     public OrderResponse getOrders(OrderRequest request) {
@@ -26,7 +26,7 @@ public class GmarketOrderService implements PartnerOrderService {
         
         // TODO: 외주 개발자가 구현
         // 1. 지마켓 API 호출
-        // 2. 지마켓 응답 데이터를 OrderResponse로 변환
+        // 2. 지마켓 응답 데이터를 SSG 기준 OrderResponse로 변환
         // 3. 변환된 데이터 반환
         
         throw new UnsupportedOperationException("외주 개발자가 구현해야 합니다.");
@@ -35,5 +35,12 @@ public class GmarketOrderService implements PartnerOrderService {
     @Override
     public String getPartnerName() {
         return "gmarket";
+    }
+    
+    @Override
+    public OrderConverter<?> getOrderConverter() {
+        // TODO: 외주 개발자가 구현
+        // 지마켓 API 응답을 SSG 기준 DTO로 변환하는 컨버터 반환
+        throw new UnsupportedOperationException("외주 개발자가 구현해야 합니다.");
     }
 }
