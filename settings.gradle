@@ -1,0 +1,9 @@
+rootProject.name = 'ssg-partner-integration'
+
+// 공통 모듈 - 모든 제휴사가 공통으로 사용하는 인터페이스 및 DTO
+include "partner-common"
+
+// 제휴사별 모듈 - 각 제휴사 API 통신 및 포맷 변환 담당
+include "partner-naver"
+include "partner-gmarket"
+include "partner-11st"
