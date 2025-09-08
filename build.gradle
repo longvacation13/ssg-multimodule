@@ -23,6 +23,9 @@ dependencies {
     implementation project(':partner-naver')
     implementation project(':partner-gmarket')
     implementation project(':partner-11st')
+    
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 subprojects {
@@ -30,7 +33,7 @@ subprojects {
     apply plugin: 'io.spring.dependency-management'
     
     java {
-        sourceCompatibility = '17'
+        sourceCompatibility = '21'
     }
     
     configurations {
